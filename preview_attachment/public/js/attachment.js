@@ -161,6 +161,24 @@ frappe.ui.form.Attachments = class Attachments extends frappe.ui.form.Attachment
         }
 
         dialog.show();
+        // Add Download button to footer
+        const download_btn = $(`<button class="btn btn-default btn-sm download-btn" style="margin-right:8px;"><i class="fa fa-download"></i> ${__("Download")}</button>`);
+        // Insert before primary close button
+        dialog.get_primary_btn().before(download_btn);
+        download_btn.on('click', () => {
+            try {
+                const link = document.createElement('a');
+                link.href = file_url;
+                link.download = file_name || '';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (e) {
+                // Fallback to opening in new tab if download attribute is ignored
+                window.open(file_url, '_blank');
+            }
+            this.action_to_close_remove_modal(dialog);
+        });
         // Make the dialog resizable via mouse
         this.enable_resizable_dialog(dialog);
         this.additional_actions(dialog);
@@ -377,6 +395,30 @@ frappe.preview_file = function (file_url, file_name) {
     }
 
     dialog.show();
+    // Add Download button to footer
+    const download_btn = $(`<button class="btn btn-default btn-sm download-btn" style="margin-right:8px;"><i class="fa fa-download"></i> ${__("Download")}</button>`);
+    dialog.get_primary_btn().before(download_btn);
+    download_btn.on('click', () => {
+        try {
+            const link = document.createElement('a');
+            link.href = file_url;
+            link.download = file_name || '';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (e) {
+            window.open(file_url, '_blank');
+        }
+        // Close and cleanup (same as primary close)
+        dialog.hide();
+        const wrapper = dialog.$wrapper;
+        // Stop media playback
+        wrapper.find('audio, video').each(function () { this.pause(); this.currentTime = 0; });
+        // reset iframes
+        wrapper.find('iframe').each(function () { const src = $(this).attr('src'); $(this).attr('src', ''); $(this).attr('src', src); });
+        dialog.$wrapper.remove();
+        $(".modal-backdrop").remove();
+    });
 
     // reuse dialog helpers from class: make it draggable/resizable
     try {
