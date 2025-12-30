@@ -431,21 +431,35 @@ frappe.preview_file = function (file_url, file_name) {
         // no-op
     }
 
-    // Delegated click handler: intercept clicks on Attach field links to open preview
 };
 
-// Delegate clicks on attach links inside forms/child tables to open preview
-$(document).on('click', '.form-layout .attached-file .attached-file-link', function (e) {
+// Global handler: Intercept ALL attachment link clicks to open in preview dialog instead of new tab
+// This works for attach fields everywhere - forms, child tables, grid views, submitted documents, etc.
+$(document).on('click', 'a[href*="/files/"], a[href*="/private/files/"], a[href*="drive.google.com"], a[href*="googleusercontent"]', function (e) {
     const $a = $(this);
     const href = $a.attr('href');
-    if (!href) return;
-    // Only intercept if link is likely to be a file (files/ or private/files/ or google drive etc.)
-    if (!href.includes('/files/') && !href.includes('/private/files/') && !href.includes('drive.google.com') && !href.includes('googleusercontent') && !href.startsWith('http')) {
-        // Not a recognized file URL - don't intercept
+    
+    // Skip if this is inside an attachment row (already has eye icon preview)
+    if ($a.closest('.attachment-row').length > 0) {
         return;
     }
-    e.preventDefault();
-    e.stopPropagation();
-    const filename = $a.text().trim() || href.split('/').pop();
-    frappe.preview_file(href, filename);
+    
+    // Skip if this is not in a form/grid context (e.g., might be a random link)
+    if ($a.closest('.frappe-control, .grid-row, .form-layout, .data-row').length === 0) {
+        return;
+    }
+    
+    // Only intercept if it's a file URL
+    if (href && (href.includes('/files/') || href.includes('/private/files/') || href.includes('drive.google.com') || href.includes('googleusercontent'))) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Extract filename from URL or link text
+        let filename = $a.text().trim();
+        if (!filename || filename === href) {
+            filename = decodeURIComponent(href.split('/').pop().split('?')[0]);
+        }
+        
+        frappe.preview_file(href, filename);
+    }
 });
