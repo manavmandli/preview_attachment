@@ -56,7 +56,7 @@ frappe.ui.form.Attachments = class Attachments extends frappe.ui.form.Attachment
         const preview_area = dialog.fields_dict.preview_area.$wrapper;
 
         // Render the file based on its type
-        if (['jpg', 'jpeg', 'png', 'gif'].includes(file_extension)) {
+        if (['jpg', 'jpeg', 'png', 'gif', 'heic', 'heif', 'webp'].includes(file_extension)) {
             preview_area.html(`<img src="${file_url}" class="preview-content" style="width: 100%; height: 100%;">`);
         } else if (file_extension === 'pdf') {
             preview_area.html(`
@@ -438,28 +438,28 @@ frappe.preview_file = function (file_url, file_name) {
 $(document).on('click', 'a[href*="/files/"], a[href*="/private/files/"], a[href*="drive.google.com"], a[href*="googleusercontent"]', function (e) {
     const $a = $(this);
     const href = $a.attr('href');
-    
+
     // Skip if this is inside an attachment row (already has eye icon preview)
     if ($a.closest('.attachment-row').length > 0) {
         return;
     }
-    
+
     // Skip if this is not in a form/grid context (e.g., might be a random link)
     if ($a.closest('.frappe-control, .grid-row, .form-layout, .data-row').length === 0) {
         return;
     }
-    
+
     // Only intercept if it's a file URL
     if (href && (href.includes('/files/') || href.includes('/private/files/') || href.includes('drive.google.com') || href.includes('googleusercontent'))) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         // Extract filename from URL or link text
         let filename = $a.text().trim();
         if (!filename || filename === href) {
             filename = decodeURIComponent(href.split('/').pop().split('?')[0]);
         }
-        
+
         frappe.preview_file(href, filename);
     }
 });
