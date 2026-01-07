@@ -33,7 +33,7 @@ Follow these steps to install and use the app:
 
 1. **Clone the Repository**
    ```bash
-   bench get-app https://github.com/Z4nzu/frappe-attachment-preview.git
+   bench get-app https://github.com/manavmandli/preview_attachment.git
 2. **Install the App**
     ```bash
    bench --site your-site-name install-app frappe_attachment_preview
